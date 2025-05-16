@@ -164,8 +164,15 @@ fun TextFormField(
     )
 }
 
+fun getMessageTextColor(backgroundColor: Color): Color {
+    // Use black for light backgrounds, white for dark backgrounds
+    val luminance = (0.299 * backgroundColor.red + 0.587 * backgroundColor.green + 0.114 * backgroundColor.blue)
+    return if (luminance > 0.6) Color.Black else Color.White
+}
+
 @Composable
-fun SingleMessage(message: String, isCurrentUser: Boolean, sentBy: String, sentOn: Long) {
+fun SingleMessage(message: String, isCurrentUser: Boolean, sentBy: String, sentOn: Long, userColor: Color) {
+    val messageTextColor = getMessageTextColor(userColor)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start
@@ -173,7 +180,7 @@ fun SingleMessage(message: String, isCurrentUser: Boolean, sentBy: String, sentO
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (isCurrentUser) Pink40 else Purple40
+                containerColor = userColor
             ),
             modifier = Modifier
                 .padding(vertical = 2.dp, horizontal = 4.dp)
@@ -184,7 +191,7 @@ fun SingleMessage(message: String, isCurrentUser: Boolean, sentBy: String, sentO
                     text = message,
                     textAlign = if (isCurrentUser) TextAlign.End else TextAlign.Start,
                     modifier = Modifier.fillMaxWidth(),
-                    color = Color.White
+                    color = messageTextColor
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(
@@ -194,13 +201,13 @@ fun SingleMessage(message: String, isCurrentUser: Boolean, sentBy: String, sentO
                     Text(
                         text = "Sent by: $sentBy",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.7f)
+                        color = messageTextColor.copy(alpha = 0.7f)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = java.text.SimpleDateFormat("hh:mm a, dd MMM", java.util.Locale.getDefault()).format(java.util.Date(sentOn)),
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.7f)
+                        color = messageTextColor.copy(alpha = 0.7f)
                     )
                 }
             }

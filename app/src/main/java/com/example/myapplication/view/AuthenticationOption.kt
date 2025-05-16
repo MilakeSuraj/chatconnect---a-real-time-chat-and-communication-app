@@ -31,7 +31,7 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 fun AuthenticationView(register: () -> Unit, login: () -> Unit) {
     var selected by remember { mutableStateOf("Login") }
     MyApplicationTheme {
-        Surface(color = MaterialTheme.colorScheme.background) {
+        Surface(color = Color.White) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

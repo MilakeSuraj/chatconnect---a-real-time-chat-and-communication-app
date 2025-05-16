@@ -17,12 +17,11 @@ object Destination {
 class Action(navController: NavHostController) {
     val home: () -> Unit = {
         navController.navigate(Home) {
-            popUpTo(Login) {
+            popUpTo(0) {
                 inclusive = true
             }
-            popUpTo(Register) {
-                inclusive = true
-            }
+            launchSingleTop = true
+            restoreState = false
         }
     }
     val login: () -> Unit = { navController.navigate(Login) }

@@ -77,4 +77,12 @@ class HomeViewModel : ViewModel() {
     private fun updateMessages(list: MutableList<Map<String, Any>>) {
         _messages.value = list.asReversed()
     }
+
+    fun clearCacheAndLogout() {
+        // Sign out from Firebase
+        Firebase.auth.signOut()
+        // TODO: Add cache clearing logic if you use any local storage (e.g., SharedPreferences, Room, etc.)
+        // Navigate to authentication page
+        // This should be handled in the Composable via a callback or navigation event
+    }
 }
