@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "221938176182",
+    "project_id": "newchatapp-38edc",
+    "storage_bucket": "newchatapp-38edc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:221938176182:android:5e6f1272e14d847b711617",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXywcs1ZvYOvISrztKFSeJEUhJOKvQY2E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
