@@ -13,6 +13,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,7 +35,9 @@ import kotlin.math.abs
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeView(
-    homeViewModel: HomeViewModel = viewModel()
+    roomId: String,
+    homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.provideFactory(roomId)),
+    onBackClick: () -> Unit = {} // Add this parameter for back navigation
 ) {
     val message: String by homeViewModel.message.observeAsState(initial = "")
     val messages: List<Map<String, Any>> by homeViewModel.messages.observeAsState(
@@ -90,11 +93,32 @@ fun HomeView(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Group Chat",
-                color = Color.White,
-                style = androidx.compose.material3.MaterialTheme.typography.titleLarge
-            )
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { onBackClick() },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = roomId,
+                        color = Color.White,
+                        style = androidx.compose.material3.MaterialTheme.typography.titleLarge
+                    )
+                }
+            }
         }
         LazyColumn(
             modifier = Modifier

@@ -4,13 +4,14 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.myapplication.Constants
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(private val roomId: String) : ViewModel() {
     init {
         getMessages()
     }
@@ -34,7 +35,7 @@ class HomeViewModel : ViewModel() {
             val db = Firebase.firestore
             db.collection("users").document(uid).get().addOnSuccessListener { document ->
                 val username = document.getString("username") ?: "Unknown"
-                db.collection(Constants.MESSAGES).document().set(
+                db.collection("chatRooms").document(roomId).collection("messages").document().set(
                     hashMapOf(
                         Constants.MESSAGE to message,
                         Constants.SENT_BY to uid,
@@ -50,7 +51,7 @@ class HomeViewModel : ViewModel() {
 
 
     private fun getMessages() {
-        Firebase.firestore.collection(Constants.MESSAGES)
+        Firebase.firestore.collection("chatRooms").document(roomId).collection("messages")
             .orderBy(Constants.SENT_ON)
             .addSnapshotListener { value, e ->
                 if (e != null) {
@@ -84,5 +85,15 @@ class HomeViewModel : ViewModel() {
         // TODO: Add cache clearing logic if you use any local storage (e.g., SharedPreferences, Room, etc.)
         // Navigate to authentication page
         // This should be handled in the Composable via a callback or navigation event
+    }
+
+    companion object {
+        fun provideFactory(roomId: String): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    @Suppress("UNCHECKED_CAST")
+                    return HomeViewModel(roomId) as T
+                }
+            }
     }
 }
