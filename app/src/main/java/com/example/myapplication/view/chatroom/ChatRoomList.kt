@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.border
+import com.google.firebase.messaging.FirebaseMessaging
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -87,7 +88,12 @@ fun ChatRoomListView(
                     Card(
                         modifier = Modifier
                             .aspectRatio(1f)
-                            .clickable { onChatRoomSelected(room.name) }
+                            .clickable {
+                                // Subscribe to FCM topic for this room (sanitize topic name)
+                                val safeRoomName = room.name.replace(Regex("[^A-Za-z0-9_\\-]"), "_")
+                                FirebaseMessaging.getInstance().subscribeToTopic("room_${safeRoomName}")
+                                onChatRoomSelected(room.name)
+                            }
                             .border(
                                 width = 2.dp,
                                 color = Color(0xFF2575FC),
