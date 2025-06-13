@@ -20,6 +20,9 @@ class LoginViewModel : ViewModel() {
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
+    private val _errorMessage = MutableLiveData<String?>(null)
+    val errorMessage: LiveData<String?> = _errorMessage
+
     fun updateEmail(newEmail: String) {
         _email.value = newEmail
     }
@@ -30,19 +33,34 @@ class LoginViewModel : ViewModel() {
 
     fun loginUser(home: () -> Unit) {
         if (_loading.value == false) {
-            val email: String = _email.value ?: throw IllegalArgumentException("email expected")
-            val password: String =
-                _password.value ?: throw IllegalArgumentException("password expected")
-
+            val email: String = _email.value ?: ""
+            val password: String = _password.value ?: ""
+            if (email.isBlank() || password.isBlank()) {
+                _errorMessage.value = "All fields are mandatory"
+                return
+            }
             _loading.value = true
 
             auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener {
-                    if (it.isSuccessful) {
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful && auth.currentUser != null) {
+                        _errorMessage.value = null
                         home()
+                    } else {
+                        val exception = task.exception
+                        _errorMessage.value = when {
+                            exception?.message?.contains("no user record") == true -> "No account found with this email."
+                            exception?.message?.contains("password is invalid") == true -> "Wrong password."
+                            exception?.message?.contains("badly formatted") == true -> "Invalid email format."
+                            else -> exception?.localizedMessage ?: "Login failed."
+                        }
                     }
                     _loading.value = false
                 }
         }
+    }
+
+    fun clearError() {
+        _errorMessage.value = null
     }
 }

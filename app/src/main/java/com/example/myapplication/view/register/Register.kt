@@ -23,7 +23,7 @@ import com.example.myapplication.view.Appbar
 import com.example.myapplication.view.Buttons
 import com.example.myapplication.view.TextFormField
 import androidx.compose.runtime.livedata.observeAsState
-
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterView(
@@ -34,48 +34,57 @@ fun RegisterView(
     val email: String by registerViewModel.email.observeAsState("")
     val password: String by registerViewModel.password.observeAsState("")
     val loading: Boolean by registerViewModel.loading.observeAsState(initial = false)
+    val errorMessage: String? by registerViewModel.errorMessage.observeAsState(null)
 
     val username = remember { mutableStateOf("") }
     val confirm = remember { mutableStateOf(TextFieldValue()) }
     val showPass = remember { mutableStateOf(false) }
-    val showDialog = remember { mutableStateOf(false) }
-    val dialogText = remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Show snackbar when errorMessage changes
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrEmpty()) {
+            snackbarHostState.showSnackbar(errorMessage!!)
+            registerViewModel.clearError()
+        }
+    }
 
     fun validateTextFields(): Boolean {
         if (email.isBlank()) {
-            dialogText.value = "Please enter your email."
-            showDialog.value = true
+            registerViewModel.clearError()
+            registerViewModel.setError("Please enter your email.")
             return false
         }
 
         if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex())) {
-            dialogText.value = "Email is invalid."
-            showDialog.value = true
+            registerViewModel.clearError()
+            registerViewModel.setError("Email is invalid.")
             return false
         }
 
         if (username.value.isBlank()) {
-            dialogText.value = "Please enter your username."
-            showDialog.value = true
+            registerViewModel.clearError()
+            registerViewModel.setError("Please enter your username.")
             return false
         }
 
         if (password.isBlank()) {
-            dialogText.value = "Please enter a password."
-            showDialog.value = true
+            registerViewModel.clearError()
+            registerViewModel.setError("Please enter a password.")
             return false
         }
 
         if (password.length < 8 || !password.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).+\$".toRegex())) {
-            dialogText.value = "Password should be at least 8 characters long and include letters, numbers, and symbols."
-            showDialog.value = true
+            registerViewModel.clearError()
+            registerViewModel.setError("Password should be at least 8 characters long and include letters, numbers, and symbols.")
             return false
         }
 
         if (confirm.value.text != password) {
-            dialogText.value = "Password and confirm password do not match."
-            showDialog.value = true
+            registerViewModel.clearError()
+            registerViewModel.setError("Password and confirm password do not match.")
             return false
         }
 
@@ -192,32 +201,15 @@ fun RegisterView(
                                 )
                             }
                         },
-//                        backgroundColor = Color.Black,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
         }
-
-        if (showDialog.value) {
-            AlertDialog(
-                onDismissRequest = { showDialog.value = false },
-                title = { Text("Alert", color = Color(32, 33, 36)) },
-                text = { Text(dialogText.value, color = Color(95, 99, 104)) },
-                confirmButton = {
-
-                    Buttons(
-                        title = "Ok",
-                        onClick = { showDialog.value = false },
-//                        backgroundColor = Color.Black
-                        modifier = Modifier.width(100.dp) // 👈 Set your desired width here
-
-                    )
-                },
-
-                shape = RoundedCornerShape(15.dp),
-                containerColor = Color.White
-            )
-        }
+        // Snackbar Host
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }

@@ -9,12 +9,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +35,7 @@ import com.example.myapplication.R
 import com.example.myapplication.view.Appbar
 import com.example.myapplication.view.Buttons
 import com.example.myapplication.view.TextFormField
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginView(
@@ -41,8 +46,19 @@ fun LoginView(
     val email: String by loginViewModel.email.observeAsState("")
     val password: String by loginViewModel.password.observeAsState("")
     val loading: Boolean by loginViewModel.loading.observeAsState(initial = false)
+    val errorMessage: String? by loginViewModel.errorMessage.observeAsState(null)
     val showPass = remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    // Show snackbar when errorMessage changes
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrEmpty()) {
+            snackbarHostState.showSnackbar(errorMessage!!)
+            loginViewModel.clearError()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -133,11 +149,15 @@ fun LoginView(
                     Buttons(
                         title = "Login",
                         onClick = { loginViewModel.loginUser(home = home) },
-                       // backgroundColor = Color.Black,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
         }
+        // Snackbar Host
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }

@@ -18,10 +18,8 @@ object Destination {
 
 class Action(navController: NavHostController) {
     val home: () -> Unit = {
-        navController.navigate(Home) {
-            popUpTo(0) {
-                inclusive = true
-            }
+        navController.navigate(Destination.ChatRoomList) {
+            // Remove popUpTo(0) to avoid closing the app
             launchSingleTop = true
             restoreState = false
         }
@@ -31,7 +29,7 @@ class Action(navController: NavHostController) {
     val navigateBack: () -> Unit = { navController.popBackStack() }
     val chatRoomList: () -> Unit = {
         navController.navigate(Destination.ChatRoomList) {
-            popUpTo(0) { inclusive = true }
+            // Remove popUpTo(0) to avoid closing the app
             launchSingleTop = true
             restoreState = false
         }
