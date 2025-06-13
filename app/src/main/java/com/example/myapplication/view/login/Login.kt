@@ -11,24 +11,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.* // <-- Add this import for all Material3 components
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState // <-- Fix observeAsState errors
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
@@ -44,9 +32,9 @@ import com.example.myapplication.R
 import com.example.myapplication.view.Appbar
 import com.example.myapplication.view.Buttons
 import com.example.myapplication.view.TextFormField
-import com.example.myapplication.view.register.ui.theme.Pink40
-import com.example.myapplication.view.register.ui.theme.Purple40
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.Icons // <-- Fix Icons error
+import androidx.compose.material.icons.filled.ArrowBack
 
 @Composable
 fun LoginView(
@@ -72,57 +60,77 @@ fun LoginView(
         }
     }
 
+    val bgColor = Color(0xFFF6F7FB)
+    val cardColor = Color.White
+    val accentColor = Color(0xFF7F7FD5)
+    val accentGradient = Brush.horizontalGradient(listOf(Color(0xFF7F7FD5), Color(0xFF86A8E7)))
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Purple40, Pink40)
-                )
-            )
+            .background(bgColor)
     ) {
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.White)
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = accentColor)
         }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding() // Ensures button stays above keyboard
                 .padding(horizontal = 16.dp, vertical = 24.dp)
-                .verticalScroll(scrollState)
-                .imePadding(),
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // AppBar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .height(56.dp)
+                    .background(accentGradient),
+                contentAlignment = Alignment.CenterStart
             ) {
-                Appbar(
-                    title = "Login",
-                    action = back
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    IconButton(
+                        onClick = back,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Login",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(32.dp))
-                    .shadow(12.dp, RoundedCornerShape(32.dp))
-                    .background(Color.White)
-                    .padding(horizontal = 28.dp, vertical = 32.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(cardColor)
+                    .padding(horizontal = 24.dp, vertical = 32.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.sign),
+                        painter = painterResource(id = com.example.myapplication.R.drawable.sign),
                         contentDescription = null,
-                        modifier = Modifier.size(160.dp)
+                        modifier = Modifier.size(120.dp)
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -170,7 +178,7 @@ fun LoginView(
                             checked = showPass.value,
                             onCheckedChange = { showPass.value = !showPass.value },
                             colors = CheckboxDefaults.colors(
-                                checkedColor = Purple40
+                                checkedColor = accentColor
                             )
                         )
                         Text(
@@ -183,13 +191,21 @@ fun LoginView(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Buttons(
-                        title = "Login",
+                    Button(
                         onClick = { loginViewModel.loginUser(home = home) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
-                    )
+                            .height(48.dp),
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(containerColor = accentColor)
+                    ) {
+                        Text(
+                            text = "Login",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                    }
                 }
             }
         }

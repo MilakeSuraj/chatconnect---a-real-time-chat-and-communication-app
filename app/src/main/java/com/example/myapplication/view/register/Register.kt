@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -91,55 +93,77 @@ fun RegisterView(
         return true
     }
 
+    val bgColor = Color(0xFFF6F7FB)
+    val cardColor = Color.White
+    val accentColor = Color(0xFF7F7FD5)
+    val accentGradient = Brush.horizontalGradient(listOf(Color(0xFF7F7FD5), Color(0xFF86A8E7)))
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(Purple40, Pink40)
-                )
-            )
+            .background(bgColor)
     ) {
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.White)
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = accentColor)
         }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding() // Ensures button stays above keyboard
                 .padding(horizontal = 16.dp, vertical = 24.dp)
-                .verticalScroll(scrollState)
-                .imePadding(),
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Modern AppBar
+            // AppBar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .height(56.dp)
+                    .background(accentGradient),
+                contentAlignment = Alignment.CenterStart
             ) {
-                Appbar(title = "Register", action = back)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    IconButton(
+                        onClick = back,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Register",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(32.dp))
-                    .shadow(12.dp, RoundedCornerShape(32.dp))
-                    .background(Color.White)
-                    .padding(horizontal = 28.dp, vertical = 32.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(cardColor)
+                    .padding(horizontal = 24.dp, vertical = 32.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.steps),
+                        painter = painterResource(id = com.example.myapplication.R.drawable.steps),
                         contentDescription = null,
-                        modifier = Modifier.size(180.dp)
+                        modifier = Modifier.size(120.dp)
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -206,7 +230,7 @@ fun RegisterView(
                         Checkbox(
                             checked = showPass.value,
                             onCheckedChange = { showPass.value = !showPass.value },
-                            colors = CheckboxDefaults.colors(checkedColor = Purple40)
+                            colors = CheckboxDefaults.colors(checkedColor = accentColor)
                         )
                         Text(
                             text = "Show password",
@@ -218,8 +242,7 @@ fun RegisterView(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Buttons(
-                        title = "Register",
+                    Button(
                         onClick = {
                             if (validateTextFields()) {
                                 registerViewModel.registerUser(
@@ -230,12 +253,20 @@ fun RegisterView(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
-                    )
+                            .height(48.dp),
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(containerColor = accentColor)
+                    ) {
+                        Text(
+                            text = "Register",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                    }
                 }
             }
         }
-        // Snackbar Host
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)

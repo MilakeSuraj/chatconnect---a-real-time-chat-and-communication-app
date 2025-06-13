@@ -37,12 +37,18 @@ import kotlin.math.abs
 fun HomeView(
     roomId: String,
     homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.provideFactory(roomId)),
-    onBackClick: () -> Unit = {} // Add this parameter for back navigation
+    onBackClick: () -> Unit = {}
 ) {
     val message: String by homeViewModel.message.observeAsState(initial = "")
     val messages: List<Map<String, Any>> by homeViewModel.messages.observeAsState(
         initial = emptyList<Map<String, Any>>().toMutableList()
     )
+
+    // Light, attractive color palette
+    val appBarColor = Color(0xFFF6F7FB)
+    val appBarGradient = androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(Color(0xFF7F7FD5), Color(0xFF86A8E7)))
+    val chatBgColor = Color(0xFFF6F7FB)
+    val inputBgColor = Color(0xFFFFFFFF)
 
     // Define a list of modern, vibrant colors for user messages
     val userColors = listOf(
@@ -74,23 +80,17 @@ fun HomeView(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
+        modifier = Modifier
+            .fillMaxSize()
+            .background(chatBgColor)
+            .imePadding() // <-- Add this so only the input field moves up with keyboard
     ) {
-        // App Bar at the top with centered text and gradient background
+        // Fixed AppBar at the top
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .background(
-                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        colors = listOf(
-                            Purple40,
-                            Pink40
-                        )
-                    )
-                ),
+                .background(appBarGradient),
             contentAlignment = Alignment.Center
         ) {
             Row(
@@ -120,10 +120,12 @@ fun HomeView(
                 }
             }
         }
+        // Chat messages scrollable area
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(weight = 0.85f, fill = true),
+                .weight(1f)
+                .background(chatBgColor),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
             reverseLayout = true
@@ -143,39 +145,42 @@ fun HomeView(
                 )
             }
         }
-        OutlinedTextField(
-            value = message,
-            onValueChange = {
-                homeViewModel.updateMessage(it)
-            },
-            label = {
-                Text(
-                    "Type Your Message"
-                )
-            },
-            maxLines = 1,
+        // Input area at the bottom
+        Box(
             modifier = Modifier
-                .padding(horizontal = 15.dp, vertical = 1.dp)
                 .fillMaxWidth()
-                .weight(weight = 0.09f, fill = true),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text
-            ),
-            singleLine = true,
-            trailingIcon = {
-                val interactionSource = remember { MutableInteractionSource() }
-                IconButton(
-                    onClick = {
-                        homeViewModel.addMessage()
-                    },
-                    interactionSource = interactionSource
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Send,
-                        contentDescription = "Send Button"
-                    )
+                .background(inputBgColor)
+                .padding(vertical = 8.dp)
+        ) {
+            OutlinedTextField(
+                value = message,
+                onValueChange = {
+                    homeViewModel.updateMessage(it)
+                },
+                label = { Text("Type Your Message") },
+                maxLines = 1,
+                modifier = Modifier
+                    .padding(horizontal = 15.dp)
+                    .fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text
+                ),
+                singleLine = true,
+                trailingIcon = {
+                    val interactionSource = remember { MutableInteractionSource() }
+                    IconButton(
+                        onClick = {
+                            homeViewModel.addMessage()
+                        },
+                        interactionSource = interactionSource
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Send,
+                            contentDescription = "Send Button"
+                        )
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Group Chat</string>
+    <string name="app_name">Chat Room</string>
     <string name="title_activity_nav_compose_app">NavComposeApp</string>
     <string name="title_activity_navigation">Navigation</string>
     <string name="title_activity_authentication_option">AuthenticationOption</string>
