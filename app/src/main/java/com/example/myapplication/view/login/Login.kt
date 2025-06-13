@@ -1,5 +1,10 @@
 package com.example.myapplication.view.login
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,12 +24,16 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -35,6 +44,8 @@ import com.example.myapplication.R
 import com.example.myapplication.view.Appbar
 import com.example.myapplication.view.Buttons
 import com.example.myapplication.view.TextFormField
+import com.example.myapplication.view.register.ui.theme.Pink40
+import com.example.myapplication.view.register.ui.theme.Purple40
 import kotlinx.coroutines.launch
 
 @Composable
@@ -51,11 +62,12 @@ fun LoginView(
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var validationMessage by remember { mutableStateOf("") }
 
     // Show snackbar when errorMessage changes
     LaunchedEffect(errorMessage) {
         if (!errorMessage.isNullOrEmpty()) {
-            snackbarHostState.showSnackbar(errorMessage!!)
+            validationMessage = errorMessage!!
             loginViewModel.clearError()
         }
     }
@@ -63,10 +75,14 @@ fun LoginView(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Purple40, Pink40)
+                )
+            )
     ) {
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.White)
         }
 
         Column(
@@ -77,20 +93,26 @@ fun LoginView(
                 .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Appbar(
-                title = "Login",
-                action = back
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                Appbar(
+                    title = "Login",
+                    action = back
+                )
+            }
 
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
+                    .clip(RoundedCornerShape(32.dp))
+                    .shadow(12.dp, RoundedCornerShape(32.dp))
                     .background(Color.White)
-                    .padding(horizontal = 24.dp, vertical = 24.dp)
+                    .padding(horizontal = 28.dp, vertical = 32.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -100,10 +122,25 @@ fun LoginView(
                     Image(
                         painter = painterResource(id = R.drawable.sign),
                         contentDescription = null,
-                        modifier = Modifier.size(260.dp)
+                        modifier = Modifier.size(160.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    AnimatedVisibility(
+                        visible = validationMessage.isNotEmpty(),
+                        enter = fadeIn() + slideInVertically { -it / 2 },
+                        exit = fadeOut() + slideOutVertically { -it / 2 }
+                    ) {
+                        Text(
+                            text = validationMessage,
+                            color = Color.Red,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        )
+                    }
 
                     TextFormField(
                         value = email,
@@ -113,7 +150,7 @@ fun LoginView(
                         visualTransformation = VisualTransformation.None
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     TextFormField(
                         value = password,
@@ -133,7 +170,7 @@ fun LoginView(
                             checked = showPass.value,
                             onCheckedChange = { showPass.value = !showPass.value },
                             colors = CheckboxDefaults.colors(
-                                checkedColor = Color(26, 115, 232)
+                                checkedColor = Purple40
                             )
                         )
                         Text(
@@ -149,12 +186,13 @@ fun LoginView(
                     Buttons(
                         title = "Login",
                         onClick = { loginViewModel.loginUser(home = home) },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
                     )
                 }
             }
         }
-        // Snackbar Host
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)

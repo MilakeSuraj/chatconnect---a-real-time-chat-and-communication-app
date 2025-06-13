@@ -1,5 +1,10 @@
 package com.example.myapplication.view.register
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,9 +16,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,8 +30,10 @@ import com.example.myapplication.R
 import com.example.myapplication.view.Appbar
 import com.example.myapplication.view.Buttons
 import com.example.myapplication.view.TextFormField
-import androidx.compose.runtime.livedata.observeAsState
+import com.example.myapplication.view.register.ui.theme.Pink40
+import com.example.myapplication.view.register.ui.theme.Purple40
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.livedata.observeAsState
 
 @Composable
 fun RegisterView(
@@ -42,62 +52,56 @@ fun RegisterView(
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var validationMessage by remember { mutableStateOf("") }
 
     // Show snackbar when errorMessage changes
     LaunchedEffect(errorMessage) {
         if (!errorMessage.isNullOrEmpty()) {
-            snackbarHostState.showSnackbar(errorMessage!!)
+            validationMessage = errorMessage!!
             registerViewModel.clearError()
         }
     }
 
     fun validateTextFields(): Boolean {
         if (email.isBlank()) {
-            registerViewModel.clearError()
-            registerViewModel.setError("Please enter your email.")
+            validationMessage = "Please enter your email."
             return false
         }
-
         if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex())) {
-            registerViewModel.clearError()
-            registerViewModel.setError("Email is invalid.")
+            validationMessage = "Email is invalid."
             return false
         }
-
         if (username.value.isBlank()) {
-            registerViewModel.clearError()
-            registerViewModel.setError("Please enter your username.")
+            validationMessage = "Please enter your username."
             return false
         }
-
         if (password.isBlank()) {
-            registerViewModel.clearError()
-            registerViewModel.setError("Please enter a password.")
+            validationMessage = "Please enter a password."
             return false
         }
-
         if (password.length < 8 || !password.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#\$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).+\$".toRegex())) {
-            registerViewModel.clearError()
-            registerViewModel.setError("Password should be at least 8 characters long and include letters, numbers, and symbols.")
+            validationMessage = "Password should be at least 8 characters long and include letters, numbers, and symbols."
             return false
         }
-
         if (confirm.value.text != password) {
-            registerViewModel.clearError()
-            registerViewModel.setError("Password and confirm password do not match.")
+            validationMessage = "Password and confirm password do not match."
             return false
         }
-
+        validationMessage = ""
         return true
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Purple40, Pink40)
+                )
+            )
     ) {
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color.White)
         }
 
         Column(
@@ -108,16 +112,24 @@ fun RegisterView(
                 .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Appbar(title = "Register", action = back)
+            // Modern AppBar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                Appbar(title = "Register", action = back)
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
+                    .clip(RoundedCornerShape(32.dp))
+                    .shadow(12.dp, RoundedCornerShape(32.dp))
                     .background(Color.White)
-                    .padding(horizontal = 24.dp, vertical = 24.dp)
+                    .padding(horizontal = 28.dp, vertical = 32.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -127,10 +139,25 @@ fun RegisterView(
                     Image(
                         painter = painterResource(id = R.drawable.steps),
                         contentDescription = null,
-                        modifier = Modifier.size(200.dp)
+                        modifier = Modifier.size(180.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    AnimatedVisibility(
+                        visible = validationMessage.isNotEmpty(),
+                        enter = fadeIn() + slideInVertically { -it / 2 },
+                        exit = fadeOut() + slideOutVertically { -it / 2 }
+                    ) {
+                        Text(
+                            text = validationMessage,
+                            color = Color.Red,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        )
+                    }
 
                     TextFormField(
                         value = email,
@@ -140,7 +167,7 @@ fun RegisterView(
                         visualTransformation = VisualTransformation.None
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     TextFormField(
                         value = username.value,
@@ -150,7 +177,7 @@ fun RegisterView(
                         visualTransformation = VisualTransformation.None
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     TextFormField(
                         value = password,
@@ -160,7 +187,7 @@ fun RegisterView(
                         visualTransformation = if (!showPass.value) PasswordVisualTransformation() else VisualTransformation.None
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     TextFormField(
                         value = confirm.value.text,
@@ -179,7 +206,7 @@ fun RegisterView(
                         Checkbox(
                             checked = showPass.value,
                             onCheckedChange = { showPass.value = !showPass.value },
-                            colors = CheckboxDefaults.colors(checkedColor = Color(26, 115, 232))
+                            colors = CheckboxDefaults.colors(checkedColor = Purple40)
                         )
                         Text(
                             text = "Show password",
@@ -201,7 +228,9 @@ fun RegisterView(
                                 )
                             }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
                     )
                 }
             }
